@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+case_library/images/*.jpg
+case_library/images/*.jpeg
+case_library/images/*.png
+case_library/index.json
+!case_library/images/.gitkeep
