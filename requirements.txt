@@ -1,13 +1,8 @@
-# PMU Lip Color Match — 학습 플랫폼
-#
-# opencv-python-headless: 서버/Streamlit Cloud 배포 시 libGL 오류 방지
-# pandas: 케이스 라이브러리 테이블 표시, CSV 색소 DB 확장용
-
-streamlit>=1.32,<2.0
-numpy>=1.24,<2.0
-scikit-image>=0.22,<0.25
-Pillow>=10.0,<11.0
-pandas>=2.0,<3.0
-matplotlib>=3.7,<4.0
-scikit-learn>=1.3,<2.0
-opencv-python-headless>=4.9,<5.0
+streamlit>=1.32
+numpy>=1.26
+scikit-image>=0.24
+Pillow>=10.4
+pandas>=2.0
+matplotlib>=3.7
+scikit-learn>=1.3
+opencv-python-headless>=4.9
