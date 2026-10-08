@@ -15,7 +15,8 @@ app.py — PMU Lip Color Match: 초급 시술자 학습 플랫폼
 
 [모드 구성]
 🏠 소개            — 프로그램 목적, 사용법, 현재 라이브러리 현황
-📚 학습 모드        — 색상군(5종) 지식 + 저장된 실제 케이스 열람
+📚 학습 모드        — 시술 기초 테크닉 + 색상군(5종) 지식 + 조색 레시피 +
+                      다크립/잔흔/하얀입술 프로토콜 + 저장된 실제 케이스 열람
 🧠 진단 연습 모드   — 사진을 보고 먼저 판단 → AI 계산과 비교 (블라인드 연습)
 🧪 샌드박스         — 자유 분석기 (사진 업로드 → 색상 진단/배합 계산), 결과를 케이스로 저장 가능
 ➕ 케이스 추가      — 실제 시술 케이스를 라이브러리에 축적 (동일 조명/환경 태그 필수)
@@ -28,6 +29,7 @@ import streamlit as st
 from skimage import color
 
 import case_library as lib
+import curriculum as cur
 import lip_analysis as la
 
 st.set_page_config(page_title="PMU Lip Color Match — 학습 플랫폼", page_icon="💋", layout="centered")
@@ -40,6 +42,7 @@ st.markdown(
     .warn-box { background-color: #fff3cd; color: #664d03 !important; padding: 10px; border-radius: 5px; border: 1px solid #ffe69c; margin-bottom: 10px; }
     .danger-box { background-color: #f8d7da; color: #58151c !important; padding: 10px; border-radius: 5px; border: 1px solid #f1aeb5; margin-bottom: 10px; }
     .group-card { background-color: #f8f9fa; color: #111111 !important; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; }
+    .copyright-box { background-color: #eef2ff; color: #1e2a5e !important; padding: 10px; border-radius: 5px; border: 1px solid #c7d2fe; margin-bottom: 14px; font-size: 0.88em; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -92,6 +95,8 @@ if mode == "🏠 소개":
         """
     )
 
+    st.markdown(f'<div class="copyright-box">ⓘ {cur.COPYRIGHT_NOTICE}</div>', unsafe_allow_html=True)
+
     st.markdown('<div class="step-header">📈 현재 라이브러리 현황</div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     c1.metric("전체 케이스", f"{stats['total']}건")
@@ -112,8 +117,9 @@ if mode == "🏠 소개":
     st.markdown('<div class="step-header">🗺️ 사용 순서 제안</div>', unsafe_allow_html=True)
     st.markdown(
         """
-        1. **📚 학습 모드**에서 5가지 색상군(Yellow/Gray/Red × Brown/Purple)의 진단 논리와
-           톤업·중화 레시피를 먼저 익힙니다.
+        1. **📚 학습 모드**에서 시술 기초 테크닉(깊이·속도·텐션·체크포인트)과
+           5가지 색상군(Yellow/Gray/Red × Brown/Purple)의 진단 논리, 조색 레시피,
+           특수 케이스 프로토콜을 먼저 익힙니다.
         2. **🧠 진단 연습 모드**에서 사진(또는 케이스)을 보고 스스로 먼저 판단해본 뒤,
            AI 계산 결과와 비교하며 판단 근거를 검증합니다.
         3. **🧪 샌드박스**에서 자유롭게 사진을 올려 분석해보고, 신뢰할 만한 결과는
@@ -129,50 +135,129 @@ if mode == "🏠 소개":
 
 elif mode == "📚 학습 모드":
     st.title("📚 학습 모드")
-    st.caption("5가지 색상군의 진단 논리와 톤업·중화 레시피를 먼저 익히세요. (반영구 시술 교재 기반)")
+    st.caption("반영구 입술 시술 교재의 전체 내용을 체계적으로 학습하세요.")
+    st.markdown(f'<div class="copyright-box">ⓘ {cur.COPYRIGHT_NOTICE}</div>', unsafe_allow_html=True)
 
-    tab1, tab2 = st.tabs(["🎨 색상군 지식", "🗂️ 저장된 실제 케이스"])
+    tab_basic, tab_color, tab_recipe, tab_protocol, tab_cases = st.tabs(
+        ["🧵 시술 기초 테크닉", "🎨 색상군 지식", "🧪 조색 레시피", "🗺️ 특수 케이스 프로토콜", "🗂️ 저장된 실제 케이스"]
+    )
 
-    with tab1:
+    # ---------------------------------------------------
+    # 탭 1. 시술 기초 테크닉
+    # ---------------------------------------------------
+    with tab_basic:
+        with st.expander("📍 입술 피부 해부학 기초", expanded=True):
+            for i, fact in enumerate(cur.LIP_ANATOMY_FACTS, start=1):
+                st.markdown(f"**{i}.** {fact}")
+
+        with st.expander("📍 유지기간 · 통증방지 · 출혈 여부"):
+            for k, v in cur.MAINTENANCE_INFO.items():
+                st.markdown(f"**{k}:** {v}")
+
+        with st.expander("📍 버프 6P 니들 제대로 사용하는 시술 루틴"):
+            st.info(f"**핵심:** {cur.BUFF6P_ROUTINE['headline']}")
+            for p in cur.BUFF6P_ROUTINE["points"]:
+                st.markdown(f"- {p}")
+
+        with st.expander("📍 맑은 입술 테크닉의 비밀 (속도·깊이·스윙·텐션)"):
+            for k, v in cur.TECHNIQUE_BASICS.items():
+                st.markdown(f"**{k}:** {v}")
+
+        with st.expander("📍 입술 시술 시 최적의 깊이 — Sweet Spot"):
+            st.image(cur.render_sweet_spot_diagram(), use_container_width=True)
+            ss = cur.SWEET_SPOT
+            st.success(f"**권장 깊이:** {ss['range']}")
+            st.markdown("효과: " + " · ".join(ss["benefits"]))
+            c1, c2 = st.columns(2)
+            with c1:
+                st.warning(f"**너무 얕을 때** ({ss['too_shallow']['layer']})")
+                for s in ss["too_shallow"]["symptoms"]:
+                    st.markdown(f"- {s}")
+                st.caption(ss["too_shallow"]["visual"])
+            with c2:
+                st.error(f"**너무 깊을 때** ({ss['too_deep']['layer']})")
+                for s in ss["too_deep"]["symptoms"]:
+                    st.markdown(f"- {s}")
+                st.caption(ss["too_deep"]["visual"])
+
+        with st.expander("📍 버프 6P 시술 시 체크포인트 9가지"):
+            for cp in cur.CHECKPOINTS:
+                st.markdown(f"**{cp['no']}. {cp['title']}**")
+                st.markdown(f"<div class='reason-text'>{cp['detail']}</div>", unsafe_allow_html=True)
+
+        with st.expander("📍 자꾸 빠지는 입술 안쪽, 잘 남기는 팁"):
+            for k, v in cur.INNER_LIP_TIP.items():
+                st.markdown(f"**{k}:** {v}")
+
+        with st.expander("📍 통증 방지 크림 도포법"):
+            for i, step in enumerate(cur.PAIN_CREAM_STEPS, start=1):
+                st.markdown(f"**{i}.** {step}")
+
+        with st.expander("📍 그라데이션 쉽게 표현하기"):
+            st.image(cur.render_gradation_diagram(), use_container_width=True)
+            st.markdown(cur.GRADATION_GUIDE["summary"])
+            for s in cur.GRADATION_GUIDE["steps"]:
+                st.markdown(f"- {s}")
+
+    # ---------------------------------------------------
+    # 탭 2. 색상군 지식 (5종 + 하얀입술)
+    # ---------------------------------------------------
+    with tab_color:
         problem_groups = {k: v for k, v in la.REFERENCE_TONES.items() if not v["healthy"]}
         for key, ref in problem_groups.items():
+            coat = cur.COAT_GUIDE.get(key, {})
             with st.expander(f"🔸 {ref['label_ko']}", expanded=False):
                 hex_preview = la.lab_to_hex(ref["lab"])
                 st.markdown(
-                    f"{color_box(hex_preview, 30)} **대표 색조 미리보기** (Lab 기준점 근사치)",
+                    f"{color_box(hex_preview, 30)} **대표 색조 미리보기** (Lab 기준점 근사치 — 실제 고객 "
+                    f"사진 대신 색상 스와치로 표시합니다)",
                     unsafe_allow_html=True,
                 )
                 st.markdown(f"**시술 방향:** {ref['direction']}")
-                st.markdown(f"**1차 톤업 색상:** {ref['toneup']}")
-                st.markdown(f"**중화 방향:** {ref['neutralize_direction']}")
+                if coat.get("extra_note"):
+                    st.caption(f"💡 {coat['extra_note']}")
+
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.markdown("**1콧**")
+                    st.info(coat.get("coat1", "-"))
+                with c2:
+                    st.markdown("**2콧**")
+                    st.info(coat.get("coat2", "-"))
+
+                if coat.get("ratio_note"):
+                    st.markdown(f"**컬러 비율:** {coat['ratio_note']}")
+                if coat.get("pink_note"):
+                    st.caption(f"🎨 {coat['pink_note']}")
+
                 st.markdown("**레시피 (경미한 경우):**")
                 st.code(ref.get("recipe_mild", "-"), language=None)
                 st.markdown("**레시피 (심한 경우):**")
                 st.code(ref.get("recipe_severe", "-"), language=None)
 
         with st.expander("⚠️ 특수 케이스: 하얀 입술 (색소 거의 없음)"):
-            st.markdown(
-                """
-                - **절대 금지**: 포피·진·루루스로즈·라라·로얄레드처럼 형광기 있거나 채도 높은 컬러를 먼저 사용
-                - **1차**: 말로6 + 헤이즈1 로 톤다운하여 먼저 시술
-                - 탈각 후 **리터치 시점**에 메인컬러 시술
-                """
-            )
-        with st.expander("⚠️ 특수 케이스: 잔흔 입술 / 군집성 포다이스반"):
-            st.markdown(
-                """
-                **잔흔(얼룩) 입술**
-                - 얼룩이 심한 경우: 얼룩 중 가장 진한 컬러로 전체를 균일하게 맞추고, 처음 시술하듯 진행
-                - 안쪽만 빠진 경우: 잔흔과 동일하거나 살짝 더 진한 컬러로 빈 부분 위주 시술
-                - **금기**: 전체가 진한 진달래색인데 누디 요청 / 진한 핑크인데 코랄로 변경 요청 → 상담 필요
+            wl = cur.WHITE_LIP_CASE
+            st.markdown(f"**절대 금지:** {wl['warning']}")
+            st.markdown("예: " + ", ".join(wl["examples_to_avoid"]))
+            for p in wl["protocol"]:
+                st.markdown(f"- {p}")
 
-                **군집성 포다이스반 동반 다크립**
-                1. 반점 먼저 시술 (말로6 + 헤이즈1)
-                2. 다크립 톤업 및 중화
-                3. 메인컬러 작업 (단, 어두운 부분에는 메인컬러 작업 금지)
-                - 첫날 원하는 색을 바로 맞춰줄 수 없음을 반드시 사전 상담해야 함
-                """
-            )
+        with st.expander("⚠️ 특수 케이스: 잔흔 입술 / 군집성 포다이스반"):
+            st.markdown(f"**{cur.RESIDUE_LIP_CASE['patchy']['title']}**")
+            st.markdown(cur.RESIDUE_LIP_CASE["patchy"]["guide"])
+            st.markdown(f"**{cur.RESIDUE_LIP_CASE['partial_missing']['title']}**")
+            st.markdown(cur.RESIDUE_LIP_CASE["partial_missing"]["guide"])
+            st.markdown("**금기 (상담 필요):**")
+            for c in cur.RESIDUE_LIP_CASE["contraindications"]:
+                st.markdown(f"- {c}")
+
+            pods = cur.DARK_LIP_PROTOCOLS["pods"]
+            st.markdown(f"**{pods['title']}**")
+            st.caption(pods["intro"])
+            for i, s in enumerate(pods["steps"], start=1):
+                st.markdown(f"{i}. {s}")
+            for n in pods["notes"]:
+                st.caption(f"- {n}")
 
         st.markdown('<div class="step-header">🧪 색소 데이터베이스 (실무 명칭)</div>', unsafe_allow_html=True)
         rows = []
@@ -185,9 +270,96 @@ elif mode == "📚 학습 모드":
                     "비고": meta.get("note", ""),
                 })
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-        st.caption("※ Lab 값은 색상 설명 기반 추정치입니다. 실측 데이터로 교체 시 정확도가 향상됩니다.")
+        st.caption("※ Lab 값은 색상 설명 기반 추정치입니다. 실측 데이터로 교체 시 정확도가 향상됩니다. "
+                   "실제 제품 보틀 사진은 브랜드 저작권으로 포함하지 않았습니다.")
 
-    with tab2:
+        st.markdown('<div class="step-header">📊 다크립 중화 한눈에 보기 (요약표)</div>', unsafe_allow_html=True)
+        summary_rows = []
+        for key, cols in cur.NEUTRALIZATION_SUMMARY_ROWS.items():
+            label = la.REFERENCE_TONES[key]["label_ko"]
+            row = {"고객군": label}
+            row.update(dict(zip(cur.NEUTRALIZATION_SUMMARY_COLUMNS, cols)))
+            summary_rows.append(row)
+        st.dataframe(pd.DataFrame(summary_rows), use_container_width=True, hide_index=True)
+
+    # ---------------------------------------------------
+    # 탭 3. 조색 레시피
+    # ---------------------------------------------------
+    with tab_recipe:
+        st.caption("색소 조색 레시피 — 원하는 혈색/베이스 톤을 만들 때 참고하세요.")
+
+        w = cur.MIXING_RECIPES["warm"]
+        with st.expander(f"🔸 {w['title']}", expanded=True):
+            st.markdown(f"- {w['natural']}")
+            st.markdown(f"- {w['coral']}")
+
+        c = cur.MIXING_RECIPES["cool"]
+        with st.expander(f"🔸 {c['title']}"):
+            st.markdown(f"- {c['natural']}")
+            st.markdown(f"- {c['cooler']}")
+
+        bc = cur.MIXING_RECIPES["blood_color"]
+        with st.expander(f"🔸 {bc['title']}"):
+            st.markdown(f"- {bc['warm_red']}")
+            st.markdown(f"- {bc['cool_red']}")
+            st.markdown(f"- {bc['natural_blend']}")
+            st.markdown(f"- {bc['deep_red']}")
+
+        mm = cur.MIXING_RECIPES["mul_mul_lip"]
+        with st.expander(f"🔸 {mm['title']}"):
+            for r in mm["recipes"]:
+                st.markdown(f"- {r}")
+
+    # ---------------------------------------------------
+    # 탭 4. 특수 케이스 프로토콜 (다크립 시술 순서)
+    # ---------------------------------------------------
+    with tab_protocol:
+        st.caption("다크립의 분포 양상에 따라 시술 순서와 회차를 다르게 설계해야 합니다.")
+
+        partial = cur.DARK_LIP_PROTOCOLS["partial"]
+        with st.expander(f"🔹 {partial['title']}", expanded=True):
+            for i, s in enumerate(partial["steps"], start=1):
+                st.markdown(f"**{i}.** {s}")
+            st.markdown("**참고 사항:**")
+            for n in partial["notes"]:
+                st.markdown(f"- {n}")
+
+        full = cur.DARK_LIP_PROTOCOLS["full"]
+        with st.expander(f"🔹 {full['title']}"):
+            st.warning(full["warning"])
+            st.markdown(full["classification"])
+            for k, v in full["sessions"].items():
+                st.markdown(f"**{k}:** {v}")
+            for t in full["tips"]:
+                st.markdown(f"- {t}")
+
+        pods = cur.DARK_LIP_PROTOCOLS["pods"]
+        with st.expander(f"🔹 {pods['title']}"):
+            st.caption(pods["intro"])
+            for i, s in enumerate(pods["steps"], start=1):
+                st.markdown(f"**{i}.** {s}")
+            for n in pods["notes"]:
+                st.markdown(f"- {n}")
+
+        st.divider()
+        st.markdown("**잔흔 입술 케이스**")
+        st.markdown(f"- **{cur.RESIDUE_LIP_CASE['patchy']['title']}:** {cur.RESIDUE_LIP_CASE['patchy']['guide']}")
+        st.markdown(f"- **{cur.RESIDUE_LIP_CASE['partial_missing']['title']}:** "
+                    f"{cur.RESIDUE_LIP_CASE['partial_missing']['guide']}")
+        st.markdown("**금기 (상담 필요):**")
+        for c in cur.RESIDUE_LIP_CASE["contraindications"]:
+            st.markdown(f"- {c}")
+
+        st.markdown("**하얀 입술 케이스**")
+        wl = cur.WHITE_LIP_CASE
+        st.markdown(f"- {wl['warning']} (예: {', '.join(wl['examples_to_avoid'])})")
+        for p in wl["protocol"]:
+            st.markdown(f"- {p}")
+
+    # ---------------------------------------------------
+    # 탭 5. 저장된 실제 케이스
+    # ---------------------------------------------------
+    with tab_cases:
         saved_cases = lib.list_cases()
         if not saved_cases:
             st.info("아직 저장된 실제 케이스가 없습니다. '➕ 케이스 추가'에서 하나씩 쌓아보세요.")
@@ -469,6 +641,8 @@ elif mode == "➕ 케이스 추가":
         "실제 시술 케이스를 라이브러리에 축적합니다. 동일 조명·환경에서 촬영한 사진을 사용하면 "
         "데이터 신뢰성이 올라갑니다. 지금은 사진이 부족해도 괜찮습니다 — '시술 전' 사진 1장만 있어도 저장 가능합니다."
     )
+    st.caption("이 라이브러리에 올리는 사진은 본인이 촬영했거나 고객 동의를 받은 사진이어야 합니다 "
+               "(제3자 저작물 업로드 금지).")
 
     with st.form("add_case_form"):
         st.markdown("**1. 사진 업로드 (시술 전은 필수, 나머지는 있는 만큼만)**")

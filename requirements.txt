@@ -1,3 +1,14 @@
+# PMU Lip Color Match — 학습 플랫폼
+#
+# 버전 하한만 지정(상한 없음): Streamlit Cloud가 최신 Python을 쓸 때도
+# 최신 패키지의 사전 빌드된 wheel을 받을 수 있도록 합니다.
+# (과거 버전 상한 때문에 Python 3.14에서 Pillow/numpy를 소스 빌드하다
+#  zlib 헤더 누락으로 설치가 실패한 적이 있어 하한만 남겼습니다.)
+#
+# opencv-python-headless: 서버/Streamlit Cloud 배포 시 libGL 오류 방지
+# pandas: 케이스 라이브러리 테이블 표시, CSV 색소 DB 확장용
+# matplotlib: 학습 모드의 자체 제작 개념도(Sweet Spot, 그라데이션) 렌더링용
+
 streamlit>=1.32
 numpy>=1.26
 scikit-image>=0.24
